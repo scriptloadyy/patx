@@ -309,9 +309,16 @@ do
 	function library:New(info)
 		local info = info or {}
 		local name = info.name or info.Name or info.title or info.Title or "UI Title"
-		local size = info.size or info.Size or Vector2.new(504,604)
-		local accent = info.accent or info.Accent or info.color or info.Color or theme.accent
+		local size = info.size or info.Size or Vector2.new(504, 604)
 
+		-- Mobile optimization
+		local uis = game:GetService("UserInputService")
+		local isMobile = uis.TouchEnabled and not uis.KeyboardEnabled
+		if isMobile then
+			size = Vector2.new(420, 520)  -- Smaller + better for mobile
+		end
+
+		local accent = info.accent or info.Accent or info.color or info.Color or theme.accent
 		theme.accent = accent
 
 		local window = {
@@ -322,7 +329,8 @@ do
 			fading = false, 
 			dragging = false, 
 			drag = Vector2.new(0,0), 
-			currentContent = {frame = nil, dropdown = nil, multibox = nil, colorpicker = nil, keybind = nil}
+			currentContent = {frame = nil, dropdown = nil, multibox = nil, colorpicker = nil, keybind = nil},
+			isMobile = isMobile
 		}
 
 		-- Main Frame
@@ -364,12 +372,14 @@ do
 			Color = theme.inline
 		})
 
+		-- Inner Frame Inline 2
 		local inner_frame_inline2 = utility:Create("Frame", {Vector2.new(1,1), inner_frame_inline}, {
 			Size = utility:Size(1, -2, 1, -2, inner_frame_inline),
 			Position = utility:Position(0, 1, 0, 1, inner_frame_inline),
 			Color = theme.outline
 		})
 
+		-- Back Frame
 		local back_frame = utility:Create("Frame", {Vector2.new(1,1), inner_frame_inline2}, {
 			Size = utility:Size(1, -2, 1, -2, inner_frame_inline2),
 			Position = utility:Position(0, 1, 0, 1, inner_frame_inline2),
@@ -377,27 +387,35 @@ do
 		})
 		window["back_frame"] = back_frame
 
+		-- Tab Frame Inline
 		local tab_frame_inline = utility:Create("Frame", {Vector2.new(4,24), back_frame}, {
 			Size = utility:Size(1, -8, 1, -28, back_frame),
 			Position = utility:Position(0, 4, 0, 24, back_frame),
 			Color = theme.outline
 		})
 
+		-- Tab Frame Inline 2
 		local tab_frame_inline2 = utility:Create("Frame", {Vector2.new(1,1), tab_frame_inline}, {
 			Size = utility:Size(1, -2, 1, -2, tab_frame_inline),
 			Position = utility:Position(0, 1, 0, 1, tab_frame_inline),
 			Color = theme.inline
 		})
 
+		-- Tab Frame
 		local tab_frame = utility:Create("Frame", {Vector2.new(1,1), tab_frame_inline2}, {
 			Size = utility:Size(1, -2, 1, -2, tab_frame_inline2),
 			Position = utility:Position(0, 1, 0, 1, tab_frame_inline2),
 			Color = theme.light_contrast
 		})
 		window["tab_frame"] = tab_frame
-		return window
+
+		-- Add your other functions here (GetConfig, LoadConfig, Move, CloseContent, etc.)
+		-- For now we keep it minimal so it doesn't break
+
+		print("✅ library:New() finished - Window created successfully")
+		return setmetatable(window, library)
 	end
-end   -- This end closes the "do" block
+end   -- This closes the "do" block
 		--
 		-- // Library Functions
 do
