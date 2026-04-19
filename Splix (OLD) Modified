@@ -94,7 +94,7 @@ local theme = {
     textborder     = Color3.fromRGB(0, 0, 0),
     cursoroutline  = Color3.fromRGB(10, 10, 10),
     font           = 2,
-    textsize       = isMobile and 15 or 13  -- slightly larger text on mobile
+    textsize       = math.floor(13 * mobileScale() + 0.5)  -- slightly larger text on mobile
 }
 
 -- ============================================================
@@ -102,27 +102,39 @@ local theme = {
 -- ============================================================
 do
     -- Returns size relative to viewport or a parent drawing
-    function utility:Size(xScale, xOffset, yScale, yOffset, instance)
-        if instance then
-            local x = xScale * instance.Size.x + xOffset
-            local y = yScale * instance.Size.y + yOffset
-            return Vector2.new(x, y)
-        else
-            local vp = getViewport()
-            return Vector2.new(xScale * vp.X + xOffset, yScale * vp.Y + yOffset)
-        end
-    end
+function utility:Size(xScale, xOffset, yScale, yOffset, instance)
+    local scale = mobileScale()
 
-    function utility:Position(xScale, xOffset, yScale, yOffset, instance)
-        if instance then
-            local x = instance.Position.x + xScale * instance.Size.x + xOffset
-            local y = instance.Position.y + yScale * instance.Size.y + yOffset
-            return Vector2.new(x, y)
-        else
-            local vp = getViewport()
-            return Vector2.new(xScale * vp.X + xOffset, yScale * vp.Y + yOffset)
-        end
+    if instance then
+        return Vector2.new(
+            xScale * instance.Size.x + (xOffset * scale),
+            yScale * instance.Size.y + (yOffset * scale)
+        )
+    else
+        local vp = getViewport()
+        return Vector2.new(
+            xScale * vp.X + (xOffset * scale),
+            yScale * vp.Y + (yOffset * scale)
+        )
     end
+end
+
+function utility:Position(xScale, xOffset, yScale, yOffset, instance)
+    local scale = mobileScale()
+
+    if instance then
+        return Vector2.new(
+            instance.Position.x + xScale * instance.Size.x + (xOffset * scale),
+            instance.Position.y + yScale * instance.Size.y + (yOffset * scale)
+        )
+    else
+        local vp = getViewport()
+        return Vector2.new(
+            xScale * vp.X + (xOffset * scale),
+            yScale * vp.Y + (yOffset * scale)
+        )
+    end
+end
 
     -- Safe Drawing constructor – wraps every new() in pcall
     function utility:Create(instanceType, instanceOffset, instanceProperties, instanceParent)
