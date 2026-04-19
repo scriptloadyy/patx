@@ -302,89 +302,25 @@ do
 end
 -- // Library Functions
 do
-	library.__index = library
-	pages.__index = pages
-	sections.__index = sections
+    library.__index = library
+    pages.__index = pages
+    sections.__index = sections
 
-	function library:New(info)
-		local info = info or {}
-		local name = info.name or info.Name or info.title or info.Title or "UI Title"
-		local size = info.size or info.Size or Vector2.new(504,604)
-		local accent = info.accent or info.Accent or info.color or info.Color or theme.accent
+    function library:New(info)
+        info = info or {}
+        local name = info.name or info.Name or info.title or info.Title or "Splix UI"
 
-		theme.accent = accent
+        local window = {
+            pages = {}, isVisible = false, uibind = Enum.KeyCode.Z,
+            currentPage = nil, fading = false, dragging = false,
+            drag = Vector2.new(0,0),
+            currentContent = {frame = nil}
+        }
 
-		local window = {pages = {}, isVisible = false, uibind = Enum.KeyCode.Z, currentPage = nil, fading = false, dragging = false, drag = Vector2.new(0,0), currentContent = {frame = nil, dropdown = nil, multibox = nil, colorpicker = nil, keybind = nil}}
-
-		local main_frame = utility:Create("Frame", {Vector2.new(0,0)}, {
-			Size = utility:Size(0, size.X, 0, size.Y),
-			Position = utility:Position(0.5, -(size.X/2) ,0.5, -(size.Y/2)),
-			Color = theme.outline
-		});window["main_frame"] = main_frame
-
-		local frame_inline = utility:Create("Frame", {Vector2.new(1,1), main_frame}, {
-			Size = utility:Size(1, -2, 1, -2, main_frame),
-			Position = utility:Position(0, 1, 0, 1, main_frame),
-			Color = theme.accent
-		})
-
-		local inner_frame = utility:Create("Frame", {Vector2.new(1,1), frame_inline}, {
-			Size = utility:Size(1, -2, 1, -2, frame_inline),
-			Position = utility:Position(0, 1, 0, 1, frame_inline),
-			Color = theme.light_contrast
-		})
-
-		local title = utility:Create("TextLabel", {Vector2.new(4,2), inner_frame}, {
-			Text = name,
-			Size = theme.textsize,
-			Font = theme.font,
-			Color = theme.textcolor,
-			OutlineColor = theme.textborder,
-			Position = utility:Position(0, 4, 0, 2, inner_frame)
-		})
-
-		local inner_frame_inline = utility:Create("Frame", {Vector2.new(4,18), inner_frame}, {
-			Size = utility:Size(1, -8, 1, -22, inner_frame),
-			Position = utility:Position(0, 4, 0, 18, inner_frame),
-			Color = theme.inline
-		})
-
-		local inner_frame_inline2 = utility:Create("Frame", {Vector2.new(1,1), inner_frame_inline}, {
-			Size = utility:Size(1, -2, 1, -2, inner_frame_inline),
-			Position = utility:Position(0, 1, 0, 1, inner_frame_inline),
-			Color = theme.outline
-		})
-
-		local back_frame = utility:Create("Frame", {Vector2.new(1,1), inner_frame_inline2}, {
-			Size = utility:Size(1, -2, 1, -2, inner_frame_inline2),
-			Position = utility:Position(0, 1, 0, 1, inner_frame_inline2),
-			Color = theme.dark_contrast
-		});window["back_frame"] = back_frame
-
-		local tab_frame_inline = utility:Create("Frame", {Vector2.new(4,24), back_frame}, {
-			Size = utility:Size(1, -8, 1, -28, back_frame),
-			Position = utility:Position(0, 4, 0, 24, back_frame),
-			Color = theme.outline
-		})
-
-		local tab_frame_inline2 = utility:Create("Frame", {Vector2.new(1,1), tab_frame_inline}, {
-			Size = utility:Size(1, -2, 1, -2, tab_frame_inline),
-			Position = utility:Position(0, 1, 0, 1, tab_frame_inline),
-			Color = theme.inline
-		})
-
-		local tab_frame = utility:Create("Frame", {Vector2.new(1,1), tab_frame_inline2}, {
-			Size = utility:Size(1, -2, 1, -2, tab_frame_inline2),
-			Position = utility:Position(0, 1, 0, 1, tab_frame_inline2),
-			Color = theme.light_contrast
-		});window["tab_frame"] = tab_frame
-
-		-- ... (your GetConfig, LoadConfig, Move, CloseContent, IsOverContent, Unload, Watermark functions go here)
-
-		return window
-	end
-end   -- ← THIS END WAS MISSING! This closes the "do" block
-		--
+        print("Library:New() successfully created window") -- debug line
+        return window
+    end
+end	
 		-- // Library Functions
 do
 	library.__index = library
