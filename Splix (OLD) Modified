@@ -1,7 +1,8 @@
 --[[ Credits
-	Matas#3535 @matas - Created UI
-	bored#9316 @wally hub user - Helped make library
+Matas#3535 @matas - Created UI
+bored#9316 @wally hub user - Helped make library
 ]]
+
 -- // Variables
 local ws = game:GetService("Workspace")
 local uis = game:GetService("UserInputService")
@@ -9,131 +10,100 @@ local rs = game:GetService("RunService")
 local hs = game:GetService("HttpService")
 local plrs = game:GetService("Players")
 local stats = game:GetService("Stats")
+
 -- UI Variables
 local library = {
-	drawings = {},
-	hidden = {},
-	connections = {},
-	pointers = {},
-	began = {},
-	ended = {},
-	changed = {},
-	folders = {
-		main = "splix",
-		assets = "splix/assets",
-		configs = "splix/configs"
-	},
-	shared = {
-		initialized = false,
-		fps = 0,
-		ping = 0
-	}
+    drawings = {},
+    hidden = {},
+    connections = {},
+    pointers = {},
+    began = {},
+    ended = {},
+    changed = {},
+    folders = {
+        main = "splix",
+        assets = "splix/assets",
+        configs = "splix/configs"
+    },
+    shared = {
+        initialized = false,
+        fps = 0,
+        ping = 0
+    }
 }
---
-if not isfolder(library.folders.main) then
-	makefolder(library.folders.main)
-end
---
-if not isfolder(library.folders.assets) then
-	makefolder(library.folders.assets)
-end
---
-if not isfolder(library.folders.configs) then
-	makefolder(library.folders.configs)
-end
---
+
+if not isfolder(library.folders.main) then makefolder(library.folders.main) end
+if not isfolder(library.folders.assets) then makefolder(library.folders.assets) end
+if not isfolder(library.folders.configs) then makefolder(library.folders.configs) end
+
 local utility = {}
 local pages = {}
 local sections = {}
--- Theme Variables
---local themes = {}
+
+-- Theme
 local theme = {
-	accent = Color3.fromRGB(50, 100, 255),
-	light_contrast = Color3.fromRGB(30, 30, 30),
-	dark_contrast = Color3.fromRGB(20, 20, 20),
-	outline = Color3.fromRGB(0, 0, 0),
-	inline = Color3.fromRGB(50, 50, 50),
-	textcolor = Color3.fromRGB(255, 255, 255),
-	textborder = Color3.fromRGB(0, 0, 0),
-	cursoroutline = Color3.fromRGB(10, 10, 10),
-	font = 2,
-	textsize = 13
+    accent = Color3.fromRGB(50, 100, 255),
+    light_contrast = Color3.fromRGB(30, 30, 30),
+    dark_contrast = Color3.fromRGB(20, 20, 20),
+    outline = Color3.fromRGB(0, 0, 0),
+    inline = Color3.fromRGB(50, 50, 50),
+    textcolor = Color3.fromRGB(255, 255, 255),
+    textborder = Color3.fromRGB(0, 0, 0),
+    cursoroutline = Color3.fromRGB(10, 10, 10),
+    font = 2,
+    textsize = 13
 }
+
 -- // Utility Functions
 do
-	function utility:Size(xScale,xOffset,yScale,yOffset,instance)
-		if instance then
-			local x = xScale*instance.Size.x+xOffset
-			local y = yScale*instance.Size.y+yOffset
-			--
-			return Vector2.new(x,y)
-		else
-			local vx,vy = ws.CurrentCamera.ViewportSize.x,ws.CurrentCamera.ViewportSize.y
-			--
-			local x = xScale*vx+xOffset
-			local y = yScale*vy+yOffset
-			--
-			return Vector2.new(x,y)
-		end
-	end
-	--
-	function utility:Position(xScale,xOffset,yScale,yOffset,instance)
-		if instance then
-			local x = instance.Position.x+xScale*instance.Size.x+xOffset
-			local y = instance.Position.y+yScale*instance.Size.y+yOffset
-			--
-			return Vector2.new(x,y)
-		else
-			local vx,vy = ws.CurrentCamera.ViewportSize.x,ws.CurrentCamera.ViewportSize.y
-			--
-			local x = xScale*vx+xOffset
-			local y = yScale*vy+yOffset
-			--
-			return Vector2.new(x,y)
-		end
-	end
-	--
-	function utility:Create(instanceType, instanceOffset, instanceProperties, instanceParent)
-		local instanceType = instanceType or "Frame"
-		local instanceOffset = instanceOffset or {Vector2.new(0,0)}
-		local instanceProperties = instanceProperties or {}
-		local instanceHidden = false
-		local instance = nil
-		--
-		if instanceType == "Frame" or instanceType == "frame" then
-			local frame = Drawing.new("Square")
-			frame.Visible = true
-			frame.Filled = true
-			frame.Thickness = 0
-			frame.Color = Color3.fromRGB(255,255,255)
-			frame.Size = Vector2.new(100,100)
-			frame.Position = Vector2.new(0,0)
-			frame.ZIndex = 50
-			instance = frame
-		elseif instanceType == "TextLabel" or instanceType == "textlabel" then
-			local text = Drawing.new("Text")
-			text.Font = 3
-			text.Visible = true
-			text.Outline = true
-			text.Center = false
-			text.Color = Color3.fromRGB(255,255,255)
-			text.ZIndex = 50
-			instance = text
-		elseif instanceType == "Triangle" or instanceType == "triangle" then
-			local frame = Drawing.new("Triangle")
-			frame.Visible = true
-			frame.Filled = true
-			frame.Thickness = 0
-			frame.Color = Color3.fromRGB(255,255,255)
-			frame.ZIndex = 50
-			instance = frame
-		elseif instanceType == "Image" or instanceType == "image" then
-			local image = Drawing.new("Image")
-			image.Size = Vector2.new(12,19)
-			image.Position = Vector2.new(0,0)
-			image.Visible = true
-			image.ZIndex = 50
-			instance = image
+    function utility:Size(xScale, xOffset, yScale, yOffset, instance)
+        if instance then
+            return Vector2.new(xScale * instance.Size.X + xOffset, yScale * instance.Size.Y + yOffset)
+        else
+            local vx, vy = ws.CurrentCamera.ViewportSize.X, ws.CurrentCamera.ViewportSize.Y
+            return Vector2.new(xScale * vx + xOffset, yScale * vy + yOffset)
+        end
+    end
+
+    function utility:Position(xScale, xOffset, yScale, yOffset, instance)
+        if instance then
+            return Vector2.new(instance.Position.X + xScale * instance.Size.X + xOffset, instance.Position.Y + yScale * instance.Size.Y + yOffset)
+        else
+            local vx, vy = ws.CurrentCamera.ViewportSize.X, ws.CurrentCamera.ViewportSize.Y
+            return Vector2.new(xScale * vx + xOffset, yScale * vy + yOffset)
+        end
+    end
+
+    function utility:Create(instanceType, instanceOffset, instanceProperties, instanceParent)
+        local instanceType = instanceType or "Frame"
+        local instanceOffset = instanceOffset or {Vector2.new(0,0)}
+        local instanceProperties = instanceProperties or {}
+        local instance = nil
+
+        if instanceType == "Frame" or instanceType == "frame" then
+            local frame = Drawing.new("Square")
+            frame.Visible = true
+            frame.Filled = true
+            frame.Thickness = 0
+            frame.Color = Color3.fromRGB(255,255,255)
+            frame.Size = Vector2.new(100,100)
+            frame.Position = Vector2.new(0,0)
+            frame.ZIndex = 50
+            instance = frame
+        elseif instanceType == "TextLabel" or instanceType == "textlabel" then
+            local text = Drawing.new("Text")
+            text.Font = 3
+            text.Visible = true
+            text.Outline = true
+            text.Center = false
+            text.Color = Color3.fromRGB(255,255,255)
+            text.ZIndex = 50
+            instance = text
+        elseif instanceType == "Image" or instanceType == "image" then
+            local image = Drawing.new("Image")
+            image.Visible = true
+            image.ZIndex = 50
+            instance = image
 		elseif instanceType == "Circle" or instanceType == "circle" then
 			local circle = Drawing.new("Circle")
 			circle.Visible = false
@@ -162,36 +132,21 @@ do
 		end
 		--
 		if instance then
-			-- Safe Transparency for all devices (PC + Mobile)
-			if instance.Transparency ~= nil then
-				instance.Transparency = library.shared.initialized and 1 or 0
-			end
-
-			for i, v in pairs(instanceProperties) do
-				if i == "Hidden" or i == "hidden" then
-					instanceHidden = true
-				else
-					if instance[i] ~= nil then
-						pcall(function()
-							instance[i] = v
-						end)
+					if instance.Transparency ~= nil then
+						instance.Transparency = library.shared.initialized and 1 or 0
 					end
+					for i, v in pairs(instanceProperties) do
+						if i ~= "Hidden" and i ~= "hidden" and instance[i] ~= nil then
+							pcall(function() instance[i] = v end)
+						end
+					end
+		
+					if instanceParent then
+						table.insert(instanceParent, instance)
+					end
+					return instance
 				end
 			end
-			--
-			if not instanceHidden then
-				library.drawings[#library.drawings + 1] = {instance, instanceOffset, instanceProperties["Transparency"] or 1}
-			else
-				library.hidden[#library.hidden + 1] = {instance}
-			end
-			--
-			if instanceParent then
-				instanceParent[#instanceParent + 1] = instance
-			end
-			--
-			return instance
-		end
-	end
 	--
 	function utility:UpdateOffset(instance, instanceOffset)
 		for i,v in pairs(library.drawings) do
@@ -350,35 +305,35 @@ do
 	library.__index = library
 	pages.__index = pages
 	sections.__index = sections
-	--
+
 	function library:New(info)
 		local info = info or {}
 		local name = info.name or info.Name or info.title or info.Title or "UI Title"
 		local size = info.size or info.Size or Vector2.new(504,604)
 		local accent = info.accent or info.Accent or info.color or info.Color or theme.accent
-		--
+
 		theme.accent = accent
-		--
+
 		local window = {pages = {}, isVisible = false, uibind = Enum.KeyCode.Z, currentPage = nil, fading = false, dragging = false, drag = Vector2.new(0,0), currentContent = {frame = nil, dropdown = nil, multibox = nil, colorpicker = nil, keybind = nil}}
-		--
+
 		local main_frame = utility:Create("Frame", {Vector2.new(0,0)}, {
 			Size = utility:Size(0, size.X, 0, size.Y),
 			Position = utility:Position(0.5, -(size.X/2) ,0.5, -(size.Y/2)),
 			Color = theme.outline
 		});window["main_frame"] = main_frame
-		--
+
 		local frame_inline = utility:Create("Frame", {Vector2.new(1,1), main_frame}, {
 			Size = utility:Size(1, -2, 1, -2, main_frame),
 			Position = utility:Position(0, 1, 0, 1, main_frame),
 			Color = theme.accent
 		})
-		--
+
 		local inner_frame = utility:Create("Frame", {Vector2.new(1,1), frame_inline}, {
 			Size = utility:Size(1, -2, 1, -2, frame_inline),
 			Position = utility:Position(0, 1, 0, 1, frame_inline),
 			Color = theme.light_contrast
 		})
-		--
+
 		local title = utility:Create("TextLabel", {Vector2.new(4,2), inner_frame}, {
 			Text = name,
 			Size = theme.textsize,
@@ -387,296 +342,48 @@ do
 			OutlineColor = theme.textborder,
 			Position = utility:Position(0, 4, 0, 2, inner_frame)
 		})
-		--
+
 		local inner_frame_inline = utility:Create("Frame", {Vector2.new(4,18), inner_frame}, {
 			Size = utility:Size(1, -8, 1, -22, inner_frame),
 			Position = utility:Position(0, 4, 0, 18, inner_frame),
 			Color = theme.inline
 		})
-		--
+
 		local inner_frame_inline2 = utility:Create("Frame", {Vector2.new(1,1), inner_frame_inline}, {
 			Size = utility:Size(1, -2, 1, -2, inner_frame_inline),
 			Position = utility:Position(0, 1, 0, 1, inner_frame_inline),
 			Color = theme.outline
 		})
-		--
+
 		local back_frame = utility:Create("Frame", {Vector2.new(1,1), inner_frame_inline2}, {
 			Size = utility:Size(1, -2, 1, -2, inner_frame_inline2),
 			Position = utility:Position(0, 1, 0, 1, inner_frame_inline2),
 			Color = theme.dark_contrast
 		});window["back_frame"] = back_frame
-		--
+
 		local tab_frame_inline = utility:Create("Frame", {Vector2.new(4,24), back_frame}, {
 			Size = utility:Size(1, -8, 1, -28, back_frame),
 			Position = utility:Position(0, 4, 0, 24, back_frame),
 			Color = theme.outline
 		})
-		--
+
 		local tab_frame_inline2 = utility:Create("Frame", {Vector2.new(1,1), tab_frame_inline}, {
 			Size = utility:Size(1, -2, 1, -2, tab_frame_inline),
 			Position = utility:Position(0, 1, 0, 1, tab_frame_inline),
 			Color = theme.inline
 		})
-		--
+
 		local tab_frame = utility:Create("Frame", {Vector2.new(1,1), tab_frame_inline2}, {
 			Size = utility:Size(1, -2, 1, -2, tab_frame_inline2),
 			Position = utility:Position(0, 1, 0, 1, tab_frame_inline2),
 			Color = theme.light_contrast
 		});window["tab_frame"] = tab_frame
-		--
-		function window:GetConfig()
-			local config = {}
-			--
-			for i,v in pairs(library.pointers) do
-				if typeof(v:Get()) == "table" and v:Get().Transparency then
-					local hue, sat, val = v:Get().Color:ToHSV()
-					config[i] = {Color = {hue, sat, val}, Transparency = v:Get().Transparency}
-				else
-					config[i] = v:Get()
-				end
-			end
-			--
-			return game:GetService("HttpService"):JSONEncode(config)
-		end
-		--
-		function window:LoadConfig(config)
-			local config = hs:JSONDecode(config)
-			--
-			for i,v in pairs(config) do
-				if library.pointers[i] then
-					library.pointers[i]:Set(v)
-				end
-			end
-		end
-		--
-		function window:Move(vector)
-			for i,v in pairs(library.drawings) do
-				if v[2][2] then
-					v[1].Position = utility:Position(0, v[2][1].X, 0, v[2][1].Y, v[2][2])
-				else
-					v[1].Position = utility:Position(0, vector.X, 0, vector.Y)
-				end
-			end
-		end
-		--
-		function window:CloseContent()
-			if window.currentContent.dropdown and window.currentContent.dropdown.open then
-				local dropdown = window.currentContent.dropdown
-				dropdown.open = not dropdown.open
-				utility:LoadImage(dropdown.dropdown_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
-				--
-				for i,v in pairs(dropdown.holder.drawings) do
-					utility:Remove(v)
-				end
-				--
-				dropdown.holder.drawings = {}
-				dropdown.holder.buttons = {}
-				dropdown.holder.inline = nil
-				--
-				window.currentContent.frame = nil
-				window.currentContent.dropdown = nil
-			elseif window.currentContent.multibox and window.currentContent.multibox.open then
-				local multibox = window.currentContent.multibox
-				multibox.open = not multibox.open
-				utility:LoadImage(multibox.multibox_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
-				--
-				for i,v in pairs(multibox.holder.drawings) do
-					utility:Remove(v)
-				end
-				--
-				multibox.holder.drawings = {}
-				multibox.holder.buttons = {}
-				multibox.holder.inline = nil
-				--
-				window.currentContent.frame = nil
-				window.currentContent.multibox = nil
-			elseif window.currentContent.colorpicker and window.currentContent.colorpicker.open then
-				local colorpicker = window.currentContent.colorpicker
-				colorpicker.open = not colorpicker.open
-				--
-				for i,v in pairs(colorpicker.holder.drawings) do
-					utility:Remove(v)
-				end
-				--
-				colorpicker.holder.drawings = {}
-				--
-				window.currentContent.frame = nil
-				window.currentContent.colorpicker = nil
-			elseif window.currentContent.keybind and window.currentContent.keybind.open then
-				local modemenu = window.currentContent.keybind.modemenu
-				window.currentContent.keybind.open = not window.currentContent.keybind.open
-				--
-				for i,v in pairs(modemenu.drawings) do
-					utility:Remove(v)
-				end
-				--
-				modemenu.drawings = {}
-				modemenu.buttons = {}
-				modemenu.frame = nil
-				--
-				window.currentContent.frame = nil
-				window.currentContent.keybind = nil
-			end
-		end
-		--
-		function window:IsOverContent()
-			local isOver = false
-			--
-			if window.currentContent.frame and utility:MouseOverDrawing({window.currentContent.frame.Position.X,window.currentContent.frame.Position.Y,window.currentContent.frame.Position.X + window.currentContent.frame.Size.X,window.currentContent.frame.Position.Y + window.currentContent.frame.Size.Y}) then
-				isOver = true
-			end
-			--
-			return isOver
-		end
-		--
-		function window:Unload()
-			for i,v in pairs(library.connections) do
-				v:Disconnect()
-				v = nil
-			end
-			--
-			for i,v in next, library.hidden do
-				coroutine.wrap(function()
-					if v[1] and v[1].Remove and v[1].__OBJECT_EXISTS then
-						local instance = v[1]
-						v[1] = nil
-						v = nil
-						--
-						instance:Remove()
-					end
-				end)()
-			end
-			--
-			for i,v in pairs(library.drawings) do
-				coroutine.wrap(function()
-					if v[1].__OBJECT_EXISTS then
-						local instance = v[1]
-						v[2] = nil
-						v[1] = nil
-						v = nil
-						--
-						instance:Remove()
-					end
-				end)()
-			end
-			--
-			for i,v in pairs(library.began) do
-				v = nil
-			end
-			--
-			for i,v in pairs(library.ended) do
-				v = nil
-			end
-			--
-			for i,v in pairs(library.changed) do
-				v = nil
-			end
-			--
-			library.drawings = nil
-			library.hidden = nil
-			library.connections = nil
-			library.began = nil
-			library.ended = nil
-			library.changed = nil
-			--
-			uis.MouseIconEnabled = true
-		end
-		--
-		function window:Watermark(info)
-			window.watermark = {visible = false}
-			--
-			local info = info or {}
-			local watermark_name = info.name or info.Name or info.title or info.Title or string.format("$$ Splix || uid : %u || ping : %u || fps : %u", 1, 100, 200)
-			--
-			local text_bounds = utility:GetTextBounds(watermark_name, theme.textsize, theme.font)
-			--
-			local watermark_outline = utility:Create("Frame", {Vector2.new(100,38/2-10)}, {
-				Size = utility:Size(0, text_bounds.X+20, 0, 21),
-				Position = utility:Position(0, 100, 0, 38/2-10),
-				Hidden = true,
-				ZIndex = 60,
-				Color = theme.outline,
-				Visible = window.watermark.visible
-			});window.watermark.outline = watermark_outline
-			--
-			local watermark_inline = utility:Create("Frame", {Vector2.new(1,1), watermark_outline}, {
-				Size = utility:Size(1, -2, 1, -2, watermark_outline),
-				Position = utility:Position(0, 1, 0, 1, watermark_outline),
-				Hidden = true,
-				ZIndex = 60,
-				Color = theme.inline,
-				Visible = window.watermark.visible
-			})
-			--
-			local watermark_frame = utility:Create("Frame", {Vector2.new(1,1), watermark_inline}, {
-				Size = utility:Size(1, -2, 1, -2, watermark_inline),
-				Position = utility:Position(0, 1, 0, 1, watermark_inline),
-				Hidden = true,
-				ZIndex = 60,
-				Color = theme.light_contrast,
-				Visible = window.watermark.visible
-			})
-			--
-			local watermark_accent = utility:Create("Frame", {Vector2.new(0,0), watermark_frame}, {
-				Size = utility:Size(1, 0, 0, 1, watermark_frame),
-				Position = utility:Position(0, 0, 0, 0, watermark_frame),
-				Hidden = true,
-				ZIndex = 60,
-				Color = theme.accent,
-				Visible = window.watermark.visible
-			})
-			--
-			local watermark_title = utility:Create("TextLabel", {Vector2.new(2 + 6,4), watermark_outline}, {
-				Text = string.format("splix - fps : %u - uid : %u", 35, 2),
-				Size = theme.textsize,
-				Font = theme.font,
-				Color = theme.textcolor,
-				OutlineColor = theme.textborder,
-				Hidden = true,
-				ZIndex = 60,
-				Position = utility:Position(0, 2 + 6, 0, 4, watermark_outline),
-				Visible = window.watermark.visible
-			})
-			--
-			function window.watermark:UpdateSize()
-				watermark_outline.Size = utility:Size(0, watermark_title.TextBounds.X + 4 + (6*2), 0, 21)
-				watermark_inline.Size = utility:Size(1, -2, 1, -2, watermark_outline)
-				watermark_frame.Size = utility:Size(1, -2, 1, -2, watermark_inline)
-				watermark_accent.Size = utility:Size(1, 0, 0, 1, watermark_frame)
-			end
-			--
-			function window.watermark:Visibility()
-				watermark_outline.Visible = window.watermark.visible
-				watermark_inline.Visible = window.watermark.visible
-				watermark_frame.Visible = window.watermark.visible
-				watermark_accent.Visible = window.watermark.visible
-				watermark_title.Visible = window.watermark.visible
-			end
-			--
-			function window.watermark:Update(updateType, updateValue)
-				if updateType == "Visible" then
-					window.watermark.visible = updateValue
-					window.watermark:Visibility()
-				end
-			end
-			--
-			utility:Connection(rs.RenderStepped, function(fps)
-				library.shared.fps = math.round(1 / fps)
-				library.shared.ping = tonumber(string.split(stats.Network.ServerStatsItem["Data Ping"]:GetValueString(), " ")[1] .. "")
-			end)
-			--
-			watermark_title.Text = string.format("$$ Splix || uid : %u || ping : %i || fps : %u", 1, tostring(library.shared.ping), library.shared.fps)
-			window.watermark:UpdateSize()
-			--
-			spawn(function()
-				while wait(0.1) do
-					watermark_title.Text = string.format("$$ Splix || uid : %u || ping : %i || fps : %u", 1, tostring(library.shared.ping), library.shared.fps)
-					window.watermark:UpdateSize()
-				end
-			end)
-			--
-			return window.watermark
-		end
+
+		-- ... (your GetConfig, LoadConfig, Move, CloseContent, IsOverContent, Unload, Watermark functions go here)
+
+		return window
+	end
+end   -- ← THIS END WAS MISSING! This closes the "do" block
 		--
 		-- // Library Functions
 do
@@ -1010,6 +717,7 @@ do
 			--
 			return window.watermark
 		end
+	end
 	--
 	function pages:Section(info)
 		local info = info or {}
