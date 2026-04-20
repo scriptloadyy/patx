@@ -61,21 +61,21 @@ local theme = {
 }
 -- // Utility Functions
 do
-	function utility:Size(xScale,xOffset,yScale,yOffset,instance)
-		if instance then
-			local x = xScale*instance.Size.x+xOffset
-			local y = yScale*instance.Size.y+yOffset
-			--
-			return Vector2.new(x,y)
-		else
-			local vx,vy = ws.CurrentCamera.ViewportSize.x,ws.CurrentCamera.ViewportSize.y
-			--
-			local x = xScale*vx+xOffset
-			local y = yScale*vy+yOffset
-			--
-			return Vector2.new(x,y)
-		end
+function utility:Size(xScale, xOffset, yScale, yOffset, instance)
+	local refX, refY
+
+	if instance then
+		refX, refY = instance.Size.X, instance.Size.Y
+	else
+		local vp = workspace.CurrentCamera.ViewportSize
+		refX, refY = vp.X, vp.Y
 	end
+
+	return Vector2.new(
+		(xScale * refX) + xOffset,
+		(yScale * refY) + yOffset
+	)
+end
 	--
 	function utility:Position(xScale,xOffset,yScale,yOffset,instance)
 		if instance then
