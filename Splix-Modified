@@ -29,6 +29,7 @@ local hs = game:GetService("HttpService")
 local ws = game:GetService("Workspace")
 local plr = plrs.LocalPlayer
 local cam = ws.CurrentCamera
+local genv = getgenv()
 -- // indexes
 library.__index = library
 pages.__index = pages
@@ -59,42 +60,44 @@ utility.new = function(instance,properties)
 	return ins
 end
 --
-utility.dragify = function(ins,touse)
-	local dragging
-	local dragInput
-	local dragStart
-	local startPos
-	--
-	local function update(input)
-		local delta = input.Position - dragStart
-		touse:TweenPosition(UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y),Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.1,true)
-	end
-	--
-	ins.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = touse.Position
+utility.dragify = function(ins, touse)
+	ins.Active = true
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-	--
-	ins.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-	--
-	uis.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			update(input)
-		end
-	end)
+    local function update(input)
+        local delta = input.Position - dragStart
+        touse:TweenPosition(UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
+    end
+
+    ins.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = touse.Position
+            -- sink the input so it doesnt reach the camera on mobile
+            game:GetService("UserInputService"):GetPropertyChangedSignal("MouseEnabled"):Connect(function() end)
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    ins.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    uis.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
 end
 --
 utility.round = function(n,d)
@@ -355,60 +358,91 @@ function library:new(props)
 	--
 	table.insert(window.themeitems["accent"]["BackgroundColor3"],outline)
 	--
-	local toggled = true
-	local cooldown = false
-	local saved = UDim2.new(0,0,0,0)
-	--
-	uis.InputBegan:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.Keyboard then
-			if Input.KeyCode == window.key then
-				if cooldown == false then
-					if toggled then
-						cooldown = true
-						toggled = not toggled
-						saved = outline.Position
-						local xx,yy = 0,0
-						local xxx,yyy = 0,0
-						--
-						if (outline.AbsolutePosition.X+(outline.AbsoluteSize.X/2)) < (cam.ViewportSize.X/2) then
-							xx = -3
-						else
-							xx = 3
-						end
-						--
-						if window.y then
-							if (outline.AbsolutePosition.Y+(outline.AbsoluteSize.Y/2)) < (cam.ViewportSize.Y/2) then
-								yy = -3
-							else
-								yy = 3
-							end
-						else
-							yy = saved.Y.Scale
-							yyy = saved.Y.Offset
-						end
-						--
-						if window.x == false and window.y == false then
-							screen.Enabled = false
-						else
-							ts:Create(outline, TweenInfo.new(0.5,Enum.EasingStyle.Quad,Enum.EasingDirection.In), {Position = UDim2.new(xx,xxx,yy,yyy)}):Play()
-						end
-						wait(0.5)
-						cooldown = false
-					else
-						cooldown = true
-						toggled = not toggled
-						if window.x == false and window.y == false then
-							screen.Enabled = true
-						else
-							ts:Create(outline, TweenInfo.new(0.5,Enum.EasingStyle.Quad,Enum.EasingDirection.Out), {Position = saved}):Play()
-						end
-						wait(0.5)
-						cooldown = false
-					end
-				end
-			end
-		end
-	end)
+local toggled = true
+local cooldown = false
+local lastTap = 0
+local TAP_INTERVAL = 0.25
+
+local originalTransparencies = {}
+
+local function hideUI()
+	if genv.onMinimizedChanged then genv.onMinimizedChanged(true) end
+    toggled = false
+    originalTransparencies = {}
+    for _, v in pairs(outline:GetDescendants()) do
+        if v:IsA("GuiObject") then
+            local entry = {bg = v.BackgroundTransparency}
+            if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+                entry.text = v.TextTransparency
+                ts:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+            end
+            if v:IsA("ImageLabel") or v:IsA("ImageButton") then
+                entry.image = v.ImageTransparency
+                ts:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+            end
+            originalTransparencies[v] = entry
+            ts:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+        end
+    end
+    ts:Create(outline, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+    task.wait(0.2)
+    outline.Visible = false
+end
+
+local function showUI()
+	if genv.onMinimizedChanged then genv.onMinimizedChanged(false) end
+    toggled = true
+    outline.Visible = true
+    for _, v in pairs(outline:GetDescendants()) do
+        if v:IsA("GuiObject") then
+            local orig = originalTransparencies[v]
+            if orig then
+                ts:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = orig.bg}):Play()
+                if orig.text then
+                    ts:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = orig.text}):Play()
+                end
+                if orig.image then
+                    ts:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = orig.image}):Play()
+                end
+            end
+        end
+    end
+    ts:Create(outline, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+end
+
+local function toggleUI()
+    if cooldown then return end
+    cooldown = true
+    if toggled then
+        hideUI()
+    else
+        showUI()
+    end
+    task.wait(0.35)
+    cooldown = false
+end
+
+uis.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.LeftControl then
+            toggleUI()
+        end
+    end
+end)
+
+uis.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        local now = tick()
+        if now - lastTap <= TAP_INTERVAL then
+            toggleUI()
+            lastTap = 0
+        else
+            lastTap = now
+        end
+    end
+end)
+
+title.Active = true
 	--
 	window.labels[#window.labels+1] = titletext
 	-- // metatable indexing + return
