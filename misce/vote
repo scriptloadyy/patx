@@ -1,4 +1,13 @@
 repeat task.wait(5) until game.Loaded and workspace
   while true do task.wait(30)
-      print("Not exists")
+      local args = {
+	"dagi"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("adoptme_new_net"):WaitForChild("adoptme_legacy_shared.ContentPacks.Summer2026.AdminVote.AdminVoteNetService:16"):InvokeServer(unpack(args))
+task.wait(1)
+local args = {
+	"alerts"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("adoptme_new_net"):WaitForChild("adoptme_new.modules.Dailies.DailiesNetService:9"):FireServer(unpack(args))
+
     end
